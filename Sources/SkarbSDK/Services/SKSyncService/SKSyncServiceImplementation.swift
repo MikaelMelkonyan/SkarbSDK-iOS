@@ -8,7 +8,6 @@
 
 import Foundation
 import UIKit
-import iAd
 import Reachability
 import AdSupport
 import AppTrackingTransparency
@@ -117,52 +116,26 @@ class SKSyncServiceImplementation: SKSyncService {
             SKServiceRegistry.storeKitService.requestProductInfoAndSendPurchase(command: command)
           }
         case .automaticSearchAds:
-          if #available(iOS 14.3, *) {
-            DispatchQueue.global(qos: .default).async {
-              do {
-                let token = try AAAttribution.attributionToken()
-                DispatchQueue.main.async {
-                  SkarbSDK.sendSource(broker: .saaapi,
-                                      features: ["saatoken": token],
-                                      brokerUserID: nil)
-                }
-                command.changeStatus(to: .done)
+          DispatchQueue.global(qos: .default).async {
+            do {
+              let token = try AAAttribution.attributionToken()
+              DispatchQueue.main.async {
+                SkarbSDK.sendSource(broker: .saaapi,
+                                    features: ["saatoken": token],
+                                    brokerUserID: nil)
               }
-              catch {
-                command.updateRetryCountAndFireDate()
-                command.changeStatus(to: .pending)
-              }
-              SKServiceRegistry.commandStore.saveCommand(command)
+              command.changeStatus(to: .done)
             }
-          }
-          else {
-            DispatchQueue.main.async {
-              ADClient.shared().requestAttributionDetails ({ (attributionJSON, error) in
-                guard error == nil else {
-                  command.updateRetryCountAndFireDate()
-                  command.changeStatus(to: .pending)
-                  SKServiceRegistry.commandStore.saveCommand(command)
-                  return
-                }
-                
-                if let attributionJSON = attributionJSON {
-                  SkarbSDK.sendSource(broker: .searchads,
-                                      features: attributionJSON,
-                                      brokerUserID: nil)
-                }
-                command.changeStatus(to: .done)
-                SKServiceRegistry.commandStore.saveCommand(command)
-              })
+            catch {
+              command.updateRetryCountAndFireDate()
+              command.changeStatus(to: .pending)
             }
+            SKServiceRegistry.commandStore.saveCommand(command)
           }
         case .fetchIdfa:
           command.changeStatus(to: .done)
           SKServiceRegistry.commandStore.saveCommand(command)
-          if #available(iOS 14, *) {
-            guard ATTrackingManager.trackingAuthorizationStatus == .authorized else {
-              return
-            }
-          } else if !ASIdentifierManager.shared().isAdvertisingTrackingEnabled {
+          guard ATTrackingManager.trackingAuthorizationStatus == .authorized else {
             return
           }
           let idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString

@@ -51,8 +51,8 @@ extension Installapi_DeviceRequest: SKCodableStruct {
     
     docDate = SwiftProtobuf.Google_Protobuf_Timestamp(date: appInstallDate)
     buildDate = SwiftProtobuf.Google_Protobuf_Timestamp(date: appBuildDate)
-    currency = Locale.current.currencyCode ?? ""
-    region = Locale.current.regionCode ?? ""
+    currency = Locale.current.currency?.identifier ?? ""
+    region = Locale.current.region?.identifier ?? ""
     sdkInitDate = SwiftProtobuf.Google_Protobuf_Timestamp(date: sdkInstallDate)
   }
   

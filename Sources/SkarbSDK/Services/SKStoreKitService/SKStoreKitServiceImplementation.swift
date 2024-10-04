@@ -309,15 +309,12 @@ private extension SKStoreKitServiceImplementation {
   
   func createPurchaseAndTransactionCommand(purchasedTransactions: [SKPaymentTransaction]) {
     let transactionIds: [String] = purchasedTransactions.compactMap { $0.transactionIdentifier }
-    var countryCode: String? = nil
-    if #available(iOS 13.0, *) {
-      countryCode = SKPaymentQueue.default().storefront?.countryCode
-    }
+    let countryCode: String? = SKPaymentQueue.default().storefront?.countryCode
     let installData = SKServiceRegistry.commandStore.getDeviceRequest()
     if !SKServiceRegistry.commandStore.hasPurhcaseV4Command {
       let purchaseDataV4 = Purchaseapi_ReceiptRequest(storefront: countryCode,
-                                                      region: allProducts?.first?.priceLocale.regionCode,
-                                                      currency: allProducts?.first?.priceLocale.currencyCode,
+                                                      region: allProducts?.first?.priceLocale.region?.identifier,
+                                                      currency: allProducts?.first?.priceLocale.currency?.identifier,
                                                       newTransactions: transactionIds,
                                                       docFolderDate: installData?.docDate,
                                                       appBuildDate: installData?.buildDate)
@@ -340,8 +337,8 @@ private extension SKStoreKitServiceImplementation {
       }
       if shouldSendPurchase {
         let purchaseDataV4 = Purchaseapi_ReceiptRequest(storefront: countryCode,
-                                                        region: allProducts?.first?.priceLocale.regionCode,
-                                                        currency: allProducts?.first?.priceLocale.currencyCode,
+                                                        region: allProducts?.first?.priceLocale.region?.identifier,
+                                                        currency: allProducts?.first?.priceLocale.currency?.identifier,
                                                         newTransactions: transactionIds,
                                                         docFolderDate: installData?.docDate,
                                                         appBuildDate: installData?.buildDate)
@@ -388,13 +385,10 @@ private extension SKStoreKitServiceImplementation {
       return
     }
     
-    var countryCode: String? = nil
-    if #available(iOS 13.0, *) {
-      countryCode = SKPaymentQueue.default().storefront?.countryCode
-    }
+    let countryCode: String? = SKPaymentQueue.default().storefront?.countryCode
     let productRequest = Priceapi_PricesRequest(storefront: countryCode,
-                                                region: products.first?.priceLocale.regionCode,
-                                                currency: products.first?.priceLocale.currencyCode,
+                                                region: products.first?.priceLocale.region?.identifier,
+                                                currency: products.first?.priceLocale.currency?.identifier,
                                                 products: priceApiProducts)
     let command = SKCommand(commandType: .priceV4,
                             status: .pending,

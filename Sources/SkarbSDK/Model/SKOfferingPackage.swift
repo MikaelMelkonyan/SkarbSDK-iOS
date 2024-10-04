@@ -67,7 +67,7 @@ public struct SKOfferPackage {
   }
   
   public var currencyCode: String? {
-    return storeProduct.priceLocale.currencyCode
+    return storeProduct.priceLocale.currency?.identifier
   }
   
   public var localizedPriceString: String {
@@ -76,8 +76,7 @@ public struct SKOfferPackage {
   }
   
   public var localizedIntroductoryPriceString: String? {
-      guard #available(iOS 12.2, *),
-            let intro = storeProduct.introductoryPrice
+      guard let intro = storeProduct.introductoryPrice
       else {
           return nil
       }
